@@ -1,0 +1,64 @@
+{% extends "solicitudes/indexpadre.html" %}
+
+{% block title %}Cierre de OT{% endblock %}
+
+{% block content %}
+<h1>Cierre de OT</h1>
+<form method="POST">
+    {% csrf_token %}
+    
+    <div class="form-group">
+        <input type="text" id="tipo_mantenimiento" name="tipo_mantenimiento" placeholder="">
+        <label for="tipo_mantenimiento">Tipo de mantenimiento</label>
+    </div>
+    <div class="form-group">
+        <input type="text" id="tipo_intervencion" name="tipo_intervencion" placeholder="">
+        <label for="tipo_intervencion">Tipo de intervencion</label>
+    </div>
+    <div class="form-group">
+        <input type="text" id="causa_falla" name="causa_falla" placeholder="">
+        <label for="causa_falla">Causa de la falla</label>
+    </div>
+    <div class="form-group">
+        <textarea id="descripcion_falla" name="descripcion_falla" rows="2" placeholder=" "></textarea>
+        <label for="descripcion_falla">Descripción</label>
+    </div>
+    <div class="form-group">
+        <textarea id="observaciones" name="observaciones" rows="2" placeholder=" "></textarea>
+        <label for="observaciones">Observaciones</label>
+    </div>
+    <div class="form-group">
+        <input type="text" id="materiales_utilizados" name="materiales_utilizados" placeholder="">
+        <label for="materiales_utilizados">Materiales</label>
+    </div>
+    <div class="form-group">
+        <input type="email" id="correo_tecnico" name="correo_tecnico" placeholder="">
+        <label for="correo_tecnico">Correo electronico</label>
+    </div>
+    <div class="form-group">
+        <input type="text" id="nombre_tecnico" name="nombre_tecnico" placeholder="">
+        <label for="nombre_tecnico">Nombre del tecnico</label>
+    </div>
+   <div class="form-group">
+        <input type="number" id="documento_tecnico" name="documento_tecnico" placeholder="">
+        <label for="documento_tecnico">Documento de identidad</label>
+    </div>
+    <div class="form-group">
+        <div class="form-group-inline">
+            <div class="form-group">
+                <input type="date" id="fecha_inicio_actividad" name="fecha_inicio_actividad" placeholder="">
+                <label for="fecha_inicio_actividad">Fecha</label>
+            </div>
+            <div class="form-group">
+                <input type="time" id="hora_inicio" name="hora_inicio" placeholder=" ">
+                <label for="hora_inicio">Hora de inicio</label>
+            </div>
+            <div class="form-group">
+                <input type="time" id="hora_fin" name="hora_fin" placeholder=" ">
+                <label for="hora_fin">Hora de fin</label>
+            </div>
+        </div>
+    </div>
+    <button type="submit">Enviar</button>
+</form>
+{% endblock %}

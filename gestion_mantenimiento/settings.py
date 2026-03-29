@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-h)pgul*0ogs%v!mo10*_=*_&-92aw5s!k%&0_9h5r2td4%_d_g'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-h)pgul*0ogs%v!mo10*_=*_&-92aw5s!k%&0_9h5r2td4%_d_g')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',') if os.environ.get('ALLOWED_HOSTS') else ['*']
 
 
 # Application definition
@@ -38,11 +39,24 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+
     'solicitudes',
+    'Activos',
+    'Gestion_ot',
+    'crispy_forms',
+    'mptt',
+    'users',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.microsoft',
+    
 
 ]
 
-
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -52,7 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    'allauth.account.middleware.AccountMiddleware',  # Añadir esta línea
 ]
 
 ROOT_URLCONF = 'gestion_mantenimiento.urls'
@@ -68,6 +82,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'solicitudes.context_processors.is_admin',  # Añadir esta línea
             ],
         },
     },
@@ -79,11 +94,10 @@ WSGI_APPLICATION = 'gestion_mantenimiento.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(default=f'sqlite:///{BASE_DIR / "db.sqlite3"}')
 }
 
 
@@ -109,13 +123,25 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-co'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
+USE_L10N = True
+
 USE_TZ = True
+
+# Formatos de fecha y hora
+DATE_FORMAT = 'd/m/Y'
+DATETIME_FORMAT = 'd/m/Y H:i'
+TIME_FORMAT = 'H:i'
+
+# Formatos de entrada de fecha y hora
+DATE_INPUT_FORMATS = ['%d/%m/%Y']
+DATETIME_INPUT_FORMATS = ['%d/%m/%Y %H:%M']
+TIME_INPUT_FORMATS = ['%H:%M']
 
 
 # Static files (CSS, JavaScript, Images)
@@ -127,8 +153,66 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
 
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/topics/db/models/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+)
+
+SITE_ID = 1
+
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+LOGIN_URL = '/users/login/'  # Ajusta esta URL según tu configuración
+
+# Configuración de los proveedores sociales
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    },
+    'microsoft': {
+        'SCOPE': ['User.Read'],
+        'AUTH_PARAMS': {'response_type': 'code'},
+    }
+}
+
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.office365.com'  # Servidor SMTP de Microsoft
+EMAIL_PORT = 587  # Puerto SMTP para TLS
+EMAIL_USE_TLS = True  # Usar TLS
+EMAIL_HOST_USER = 'soportemantenimientomimosoriente@mimos.com.co'  # Tu dirección de correo electrónico de Microsoft
+EMAIL_HOST_PASSWORD = 'Juanes2207'  # Tu contraseña de correo electrónico de Microsoft
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Dirección de correo electrónico predeterminada para enviar correos
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        '': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+        },
+    },
+}

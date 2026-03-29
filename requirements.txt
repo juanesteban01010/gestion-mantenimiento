@@ -1,0 +1,5 @@
+Django==4.2.7
+gunicorn==21.2.0
+dj-database-url==2.1.0
+# Agrega otras dependencias según tu proyecto (ej. django-allauth, pillow, etc.)
+# Instala con: pip install -r requirements.txt
