@@ -30,7 +30,7 @@ ALLOWED_HOSTS = ['web-production-1483.up.railway.app']
 
 CSRF_TRUSTED_ORIGINS = ['https://web-production-1483.up.railway.app']
 
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 
 
 # Application definition
@@ -70,7 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AccountMiddleware',  # Añadir esta línea
+    # 'allauth.account.middleware.AccountMiddleware',  # Comentado temporalmente
 ]
 
 ROOT_URLCONF = 'gestion_mantenimiento.urls'
