@@ -16,6 +16,7 @@ function drag(event) {
 // Hacer que las funciones estén disponibles en el ámbito global
 window.allowDrop = allowDrop;
 window.drag = drag;
+window.drop = drop;
 window.dropDesktop = dropDesktop;
 
 // Touch support for mobile
