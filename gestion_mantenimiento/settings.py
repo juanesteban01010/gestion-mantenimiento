@@ -30,6 +30,8 @@ ALLOWED_HOSTS = ['web-production-1483.up.railway.app']
 
 CSRF_TRUSTED_ORIGINS = ['https://web-production-1483.up.railway.app']
 
+SECURE_SSL_REDIRECT = False
+
 
 # Application definition
 
@@ -168,6 +170,8 @@ AUTHENTICATION_BACKENDS = (
 )
 
 SITE_ID = 1
+
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
