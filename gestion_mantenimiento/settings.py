@@ -32,6 +32,9 @@ CSRF_TRUSTED_ORIGINS = ['https://web-production-1483.up.railway.app']
 
 SECURE_SSL_REDIRECT = False
 
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+
 
 # Application definition
 
@@ -70,7 +73,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'allauth.account.middleware.AccountMiddleware',  # Comentado temporalmente
+    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'gestion_mantenimiento.urls'
