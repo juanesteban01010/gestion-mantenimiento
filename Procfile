@@ -1,1 +1,1 @@
-web: gunicorn gestion_mantenimiento.wsgi --bind 0.0.0.0:$PORT
+web: echo "Running collectstatic" && python manage.py collectstatic --noinput && echo "Collectstatic done" && gunicorn gestion_mantenimiento.wsgi --bind 0.0.0.0:$PORT
