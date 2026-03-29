@@ -174,7 +174,7 @@ AUTHENTICATION_BACKENDS = (
 
 SITE_ID = 1
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/solicitudes/'
 LOGOUT_REDIRECT_URL = '/'
 
 LOGIN_URL = '/users/login/'  # Ajusta esta URL según tu configuración
