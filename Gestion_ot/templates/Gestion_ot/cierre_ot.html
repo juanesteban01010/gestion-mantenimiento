@@ -3,62 +3,120 @@
 {% block title %}Cierre de OT{% endblock %}
 
 {% block content %}
-<h1>Cierre de OT</h1>
-<form method="POST">
+<h1>Cierre de OT - {{ ot.solicitud.consecutivo }}</h1>
+
+<form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     
+    <!-- Campos existentes -->
     <div class="form-group">
-        <input type="text" id="tipo_mantenimiento" name="tipo_mantenimiento" placeholder="">
-        <label for="tipo_mantenimiento">Tipo de mantenimiento</label>
+        {{ form.tipo_mantenimiento }}
+        <label for="{{ form.tipo_mantenimiento.id_for_label }}">Tipo de mantenimiento</label>
     </div>
+    
     <div class="form-group">
-        <input type="text" id="tipo_intervencion" name="tipo_intervencion" placeholder="">
-        <label for="tipo_intervencion">Tipo de intervencion</label>
+        {{ form.tipo_intervencion }}
+        <label for="{{ form.tipo_intervencion.id_for_label }}">Tipo de intervención</label>
     </div>
+    
     <div class="form-group">
-        <input type="text" id="causa_falla" name="causa_falla" placeholder="">
-        <label for="causa_falla">Causa de la falla</label>
+        {{ form.causa_falla }}
+        <label for="{{ form.causa_falla.id_for_label }}">Causa de la falla</label>
     </div>
+    
     <div class="form-group">
-        <textarea id="descripcion_falla" name="descripcion_falla" rows="2" placeholder=" "></textarea>
-        <label for="descripcion_falla">Descripción</label>
+        {{ form.descripcion_falla }}
+        <label for="{{ form.descripcion_falla.id_for_label }}">Descripción de la falla</label>
     </div>
+    
     <div class="form-group">
-        <textarea id="observaciones" name="observaciones" rows="2" placeholder=" "></textarea>
-        <label for="observaciones">Observaciones</label>
+        {{ form.observaciones }}
+        <label for="{{ form.observaciones.id_for_label }}">Observaciones</label>
     </div>
+    
     <div class="form-group">
-        <input type="text" id="materiales_utilizados" name="materiales_utilizados" placeholder="">
-        <label for="materiales_utilizados">Materiales</label>
+        {{ form.materiales_utilizados }}
+        <label for="{{ form.materiales_utilizados.id_for_label }}">Materiales utilizados</label>
     </div>
+    
     <div class="form-group">
-        <input type="email" id="correo_tecnico" name="correo_tecnico" placeholder="">
-        <label for="correo_tecnico">Correo electronico</label>
+        {{ form.correo_tecnico }}
+        <label for="{{ form.correo_tecnico.id_for_label }}">Correo electrónico</label>
     </div>
+    
     <div class="form-group">
-        <input type="text" id="nombre_tecnico" name="nombre_tecnico" placeholder="">
-        <label for="nombre_tecnico">Nombre del tecnico</label>
+        {{ form.nombre_tecnico }}
+        <label for="{{ form.nombre_tecnico.id_for_label }}">Nombre del técnico</label>
     </div>
-   <div class="form-group">
-        <input type="number" id="documento_tecnico" name="documento_tecnico" placeholder="">
-        <label for="documento_tecnico">Documento de identidad</label>
-    </div>
+    
     <div class="form-group">
-        <div class="form-group-inline">
-            <div class="form-group">
-                <input type="date" id="fecha_inicio_actividad" name="fecha_inicio_actividad" placeholder="">
-                <label for="fecha_inicio_actividad">Fecha</label>
-            </div>
-            <div class="form-group">
-                <input type="time" id="hora_inicio" name="hora_inicio" placeholder=" ">
-                <label for="hora_inicio">Hora de inicio</label>
-            </div>
-            <div class="form-group">
-                <input type="time" id="hora_fin" name="hora_fin" placeholder=" ">
-                <label for="hora_fin">Hora de fin</label>
-            </div>
-        </div>
+        {{ form.documento_tecnico }}
+        <label for="{{ form.documento_tecnico.id_for_label }}">Documento de identidad</label>
     </div>
-    <button type="submit">Enviar</button>
+    
+    <div class="form-group">
+        {{ form.fecha_inicio_actividad }}
+        <label for="{{ form.fecha_inicio_actividad.id_for_label }}">Fecha de inicio</label>
+    </div>
+    
+    <div class="form-group">
+        {{ form.hora_inicio }}
+        <label for="{{ form.hora_inicio.id_for_label }}">Hora de inicio</label>
+    </div>
+    
+    <div class="form-group">
+        {{ form.hora_fin }}
+        <label for="{{ form.hora_fin.id_for_label }}">Hora de fin</label>
+    </div>
+    
+    <!-- Nuevos campos -->
+    <div class="form-group">
+        {{ form.imagenes_antes }}
+        <label for="{{ form.imagenes_antes.id_for_label }}">Imágenes antes del trabajo</label>
+    </div>
+    
+    <div class="form-group">
+        {{ form.imagenes_despues }}
+        <label for="{{ form.imagenes_despues.id_for_label }}">Imágenes después del trabajo</label>
+    </div>
+    
+    <div class="form-group">
+        {{ form.se_soluciono }}
+        <label for="{{ form.se_soluciono.id_for_label }}">¿Se solucionó la falla?</label>
+    </div>
+    
+    <!-- Firma digital -->
+    <div class="form-group">
+        <label>Firma digital del técnico</label>
+        <canvas id="signature-canvas" width="400" height="200" style="border: 1px solid #ccc;"></canvas>
+        <br>
+        <button type="button" id="clear-signature">Limpiar firma</button>
+        <input type="hidden" name="firma_digital" id="firma-data">
+    </div>
+    
+    <button type="submit">Guardar y Generar Informe</button>
 </form>
+
+<!-- JavaScript para firma digital -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const canvas = document.getElementById('signature-canvas');
+    const signaturePad = new SignaturePad(canvas);
+    const clearButton = document.getElementById('clear-signature');
+    const form = document.querySelector('form');
+    
+    clearButton.addEventListener('click', function() {
+        signaturePad.clear();
+    });
+    
+    form.addEventListener('submit', function(e) {
+        if (!signaturePad.isEmpty()) {
+            const dataURL = signaturePad.toDataURL();
+            document.getElementById('firma-data').value = dataURL;
+        }
+    });
+});
+</script>
+
 {% endblock %}

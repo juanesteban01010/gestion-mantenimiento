@@ -36,11 +36,32 @@ class OrdenTrabajoForm(forms.ModelForm):
         return fecha_actividad
 
 class CierreOtForm(forms.ModelForm):
+    imagenes_antes = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        label="Imágenes Antes del Trabajo"
+    )
+    imagenes_despues = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'multiple': True}),
+        label="Imágenes Después del Trabajo"
+    )
+    firma_digital = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(),
+        label="Firma Digital"
+    )
+    se_soluciono = forms.BooleanField(
+        required=False,
+        label="¿Se solucionó la falla?"
+    )
+
     class Meta:
         model = CierreOt
         fields = [
             'tipo_mantenimiento', 'materiales_utilizados', 'correo_tecnico', 
             'descripcion_falla', 'fecha_inicio_actividad', 'observaciones', 
             'nombre_tecnico', 'causa_falla', 'hora_inicio', 'documento_tecnico', 
-            'tipo_intervencion', 'hora_fin'
+            'tipo_intervencion', 'hora_fin', 'imagenes_antes', 'imagenes_despues',
+            'firma_digital', 'se_soluciono'
         ]

@@ -11,5 +11,7 @@ cryptography==42.0.5
 python-dateutil==2.8.2
 psycopg2-binary==2.9.9
 whitenoise==6.6.0
+reportlab==4.0.7
+Pillow==10.1.0
 # Agrega otras dependencias según tu proyecto
 # Instala con: pip install -r requirements.txt

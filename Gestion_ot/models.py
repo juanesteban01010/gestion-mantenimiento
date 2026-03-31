@@ -53,6 +53,11 @@ class CierreOt(models.Model):
     hora_fin = models.TimeField(null=True, blank=True)
     documento_tecnico = models.FileField(max_length=100, null=True, blank=True)
     tipo_intervencion = models.CharField(max_length=100, null=True, blank=True)
+    # Nuevos campos para imágenes y firma
+    imagenes_antes = models.JSONField(default=list, blank=True)  # Lista de URLs o paths de imágenes
+    imagenes_despues = models.JSONField(default=list, blank=True)
+    firma_digital = models.TextField(null=True, blank=True)  # Firma como data URL (base64)
+    se_soluciono = models.BooleanField(default=False)  # Si se solucionó la falla
 
     def __str__(self):
         return f"OT-{self.orden_trabajo.solicitud.consecutivo} - {self.nombre_tecnico} "

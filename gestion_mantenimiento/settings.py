@@ -204,6 +204,8 @@ EMAIL_HOST_USER = 'soportemantenimientomimosoriente@mimos.com.co'  # Tu direcci�
 EMAIL_HOST_PASSWORD = 'Juanes2207'  # Tu contraseña de correo electrónico de Microsoft
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER  # Dirección de correo electrónico predeterminada para enviar correos
 
+EMAIL_ADICIONAL = 'juanesteban01010@gmail.com'  # Email adicional para copias
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

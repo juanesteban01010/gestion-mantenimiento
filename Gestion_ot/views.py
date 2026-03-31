@@ -15,6 +15,17 @@ import logging
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.core.serializers.json import DjangoJSONEncoder
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
+from reportlab.lib.units import inch
+from django.core.mail import send_mail
+from django.conf import settings
+from io import BytesIO
+import os
+from PIL import Image as PILImage
+import base64
 
 class CustomDjangoJSONEncoder(DjangoJSONEncoder):
     def default(self, obj):
@@ -151,9 +162,34 @@ def listar_ot(request):
 def cierre_ot(request, ot_id):
     ot = get_object_or_404(OrdenTrabajo, id=ot_id)
     cierre_ot, created = CierreOt.objects.get_or_create(orden_trabajo=ot)
+    
     if request.method == 'POST':
-        form = CierreOtForm(request.POST, instance=cierre_ot)
+        form = CierreOtForm(request.POST, request.FILES, instance=cierre_ot)
         if form.is_valid():
+            # Guardar imágenes antes
+            imagenes_antes = request.FILES.getlist('imagenes_antes')
+            if imagenes_antes:
+                cierre_ot.imagenes_antes = [img.name for img in imagenes_antes]
+                for img in imagenes_antes:
+                    # Aquí podrías guardar las imágenes en el servidor
+                    pass
+            
+            # Guardar imágenes después
+            imagenes_despues = request.FILES.getlist('imagenes_despues')
+            if imagenes_despues:
+                cierre_ot.imagenes_despues = [img.name for img in imagenes_despues]
+                for img in imagenes_despues:
+                    # Aquí podrías guardar las imágenes en el servidor
+                    pass
+            
+            # Guardar firma
+            firma_data = request.POST.get('firma_digital')
+            if firma_data:
+                cierre_ot.firma_digital = firma_data
+            
+            cierre_ot.save()
+            
+            # Cambiar estados
             estado_revision = Estado.objects.get(nombre="en revision")
             ot.estado = estado_revision
             ot.save()
@@ -162,9 +198,18 @@ def cierre_ot(request, ot_id):
             solicitud = ot.solicitud
             solicitud.estado = estado_revision
             solicitud.save()
+            
+            # Generar y enviar PDF
+            try:
+                pdf_buffer = generar_pdf_informe(cierre_ot)
+                enviar_pdf_por_email(pdf_buffer, cierre_ot)
+            except Exception as e:
+                print(f"Error generando/enviando PDF: {e}")
+            
             return redirect('listar_ot')
     else:
         form = CierreOtForm(instance=cierre_ot)
+    
     return render(request, 'Gestion_ot/cierre_ot.html', {'form': form, 'ot': ot})
 
 
@@ -210,3 +255,98 @@ def detalles_solicitud(request, consecutivo):
             })
     
     return JsonResponse(data, encoder=CustomDjangoJSONEncoder)
+
+
+def generar_pdf_informe(cierre_ot):
+    """Genera un PDF de informe similar al de Google Docs"""
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    styles = getSampleStyleSheet()
+    story = []
+    
+    # Título
+    title = Paragraph("INFORME DE MANTENIMIENTO", styles['Title'])
+    story.append(title)
+    story.append(Spacer(1, 12))
+    
+    # Datos del informe
+    ot = cierre_ot.orden_trabajo
+    solicitud = ot.solicitud
+    
+    data = {
+        'OT': str(solicitud.consecutivo),
+        'Equipo': getattr(solicitud.equipo, 'nombre', '') if hasattr(solicitud, 'equipo') else '',
+        'Cliente': solicitud.PDV,
+        'Fecha': cierre_ot.fecha_inicio_actividad.strftime('%d/%m/%Y') if cierre_ot.fecha_inicio_actividad else '',
+        'Tipo de Mantenimiento': cierre_ot.tipo_mantenimiento or '',
+        'Tipo de Intervención': cierre_ot.tipo_intervencion or '',
+        'Causa de la Falla': cierre_ot.causa_falla or '',
+        '¿Se solucionó la falla?': 'Sí' if cierre_ot.se_soluciono else 'No',
+        'Descripción': cierre_ot.descripcion_falla or '',
+        'Observaciones': cierre_ot.observaciones or '',
+        'Recibido por': cierre_ot.nombre_tecnico or '',
+        'Documento de Identidad': cierre_ot.documento_tecnico.name if cierre_ot.documento_tecnico else '',
+        'Nombre del Técnico': cierre_ot.nombre_tecnico or '',
+    }
+    
+    # Agregar párrafos con los datos
+    for key, value in data.items():
+        p = Paragraph(f"<b>{key}:</b> {value}", styles['Normal'])
+        story.append(p)
+        story.append(Spacer(1, 6))
+    
+    # Agregar firma si existe
+    if cierre_ot.firma_digital:
+        story.append(Spacer(1, 12))
+        firma_title = Paragraph("<b>Firma Digital del Técnico:</b>", styles['Normal'])
+        story.append(firma_title)
+        story.append(Spacer(1, 6))
+        
+        # Convertir data URL a imagen
+        try:
+            header, encoded = cierre_ot.firma_digital.split(",", 1)
+            image_data = base64.b64decode(encoded)
+            img_buffer = BytesIO(image_data)
+            img = PILImage.open(img_buffer)
+            
+            # Convertir a RGB si es necesario
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            
+            # Guardar temporalmente
+            temp_img_path = f"/tmp/firma_{cierre_ot.id}.png"
+            img.save(temp_img_path)
+            
+            # Agregar al PDF
+            firma_img = Image(temp_img_path, width=200, height=100)
+            story.append(firma_img)
+            
+            # Limpiar archivo temporal
+            os.remove(temp_img_path)
+        except Exception as e:
+            print(f"Error procesando firma: {e}")
+    
+    doc.build(story)
+    buffer.seek(0)
+    return buffer
+
+
+def enviar_pdf_por_email(pdf_buffer, cierre_ot):
+    """Envía el PDF por email"""
+    subject = f"Informe de Mantenimiento OT-{cierre_ot.orden_trabajo.solicitud.consecutivo}"
+    message = "Adjunto se encuentra el informe de mantenimiento."
+    from_email = settings.DEFAULT_FROM_EMAIL
+    recipient_list = [cierre_ot.correo_tecnico] if cierre_ot.correo_tecnico else []
+    
+    # Agregar email adicional si existe
+    if hasattr(settings, 'EMAIL_ADICIONAL') and settings.EMAIL_ADICIONAL:
+        recipient_list.append(settings.EMAIL_ADICIONAL)
+    
+    if recipient_list:
+        send_mail(
+            subject,
+            message,
+            from_email,
+            recipient_list,
+            attachments=[('informe_mantenimiento.pdf', pdf_buffer.getvalue(), 'application/pdf')]
+        )
