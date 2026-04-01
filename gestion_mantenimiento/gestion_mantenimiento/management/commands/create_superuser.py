@@ -6,16 +6,12 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         User = get_user_model()
-        user, created = User.objects.get_or_create(username='admin', defaults={'email': 'admin@example.com'})
+        user, created = User.objects.get_or_create(username='juanesteban01010', defaults={'email': 'juanesteban01010@example.com'})
+        user.set_password('r3g1n4jK')
+        user.is_superuser = True
+        user.is_staff = True
+        user.save()
         if created:
-            user.set_password('admin')
-            user.is_superuser = True
-            user.is_staff = True
-            user.save()
-            self.stdout.write(self.style.SUCCESS('Superuser created: admin / admin'))
+            self.stdout.write(self.style.SUCCESS('Superuser created: juanesteban01010 / r3g1n4jK'))
         else:
-            user.set_password('admin')
-            user.is_superuser = True
-            user.is_staff = True
-            user.save()
-            self.stdout.write(self.style.SUCCESS('Superuser updated: admin / admin'))
+            self.stdout.write(self.style.SUCCESS('Superuser updated: juanesteban01010 / r3g1n4jK'))
