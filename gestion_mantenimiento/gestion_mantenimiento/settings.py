@@ -80,7 +80,7 @@ MIDDLEWARE = [
     'allauth.account.middleware.AccountMiddleware',
 ]
 
-ROOT_URLCONF = 'gestion_mantenimiento.urls'
+ROOT_URLCONF = 'gestion_mantenimiento.gestion_mantenimiento.urls'
 
 TEMPLATES = [
     {
