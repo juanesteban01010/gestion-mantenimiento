@@ -16,6 +16,13 @@ def register(request):
     return render(request, 'users/register.html', {'form': form})
 
 def custom_login(request):
+    # Maps each account type to the required group name
+    TIPO_CUENTA_GROUP = {
+        'jefe_de_area': 'Admin',
+        'administrador': 'Cliente',
+        'tecnico': 'Tecnico',
+    }
+
     if request.method == 'POST':
         form = CustomAuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -23,13 +30,13 @@ def custom_login(request):
             tipo_cuenta = form.cleaned_data.get('tipo_cuenta')
             co = form.cleaned_data.get('co')
 
-            # Validar que el usuario pertenece al grupo seleccionado
-            if tipo_cuenta == 'jefe_de_area' and not user.groups.filter(name='Admin').exists():
-                form.add_error('tipo_cuenta', 'No perteneces al grupo Jefe de Área.')
-            elif tipo_cuenta == 'administrador' and not user.groups.filter(name='Cliente').exists():
-                form.add_error('tipo_cuenta', 'No perteneces al grupo Administrador.')
-            elif tipo_cuenta == 'tecnico' and not user.groups.filter(name='Tecnico').exists():
-                form.add_error('tipo_cuenta', 'No perteneces al grupo Técnico.')
+            # Superusers bypass group validation and can log in with any account type
+            required_group = TIPO_CUENTA_GROUP.get(tipo_cuenta)
+            if not user.is_superuser and required_group and not user.groups.filter(name=required_group).exists():
+                form.add_error(
+                    'tipo_cuenta',
+                    f'Tu usuario no pertenece al grupo requerido para este tipo de cuenta ({required_group}).',
+                )
             else:
                 auth_login(request, user)
                 request.session['tipo_cuenta'] = tipo_cuenta
