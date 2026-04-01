@@ -1,2 +1,2 @@
-release: python manage.py create_superuser
-web: python manage.py create_superuser && echo "Running collectstatic" && python manage.py collectstatic --noinput && echo "Collectstatic done" && gunicorn gestion_mantenimiento.gestion_mantenimiento.wsgi --bind 0.0.0.0:$PORT
+release: python manage.py migrate --noinput && python manage.py create_default_superuser
+web: python manage.py collectstatic --noinput && gunicorn gestion_mantenimiento.gestion_mantenimiento.wsgi --bind 0.0.0.0:$PORT
